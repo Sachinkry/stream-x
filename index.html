@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sachinkry</title>
+    <meta
+      name="description"
+      content="A single-column stream of thoughts, fragments, and links from sachinkry."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <main class="stream-layout">
+        <header class="hero">
+          <p class="eyebrow">Notebook / Stream</p>
+          <h1>sachinkry</h1>
+          <p class="hero-copy">
+            Fragments on software, attention, and the small disciplines that keep thought honest.
+          </p>
+        </header>
+
+        <section class="controls" aria-label="Stream controls">
+          <label class="search-field" for="search-input">
+            <span class="visually-hidden">Search entries</span>
+            <input
+              id="search-input"
+              name="search"
+              type="search"
+              placeholder="Search thoughts, dates, links..."
+              autocomplete="off"
+            />
+          </label>
+          <p class="stream-meta" id="stream-meta">Loading archive...</p>
+        </section>
+
+        <section class="status-message" id="status-message" aria-live="polite"></section>
+        <section class="stream" id="stream" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <template id="entry-template">
+      <article class="entry-card">
+        <div class="entry-card__frame">
+          <header class="entry-card__header">
+            <time class="entry-card__date"></time>
+            <span class="entry-card__time"></span>
+          </header>
+          <div class="entry-card__body"></div>
+        </div>
+      </article>
+    </template>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>

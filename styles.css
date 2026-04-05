@@ -1,0 +1,235 @@
+:root {
+  --page-bg: linear-gradient(180deg, #f6f1e8 0%, #efe7da 100%);
+  --paper: rgba(251, 246, 238, 0.9);
+  --text: #241f1a;
+  --muted: #74695d;
+  --line: rgba(60, 45, 31, 0.22);
+  --line-strong: rgba(60, 45, 31, 0.66);
+  --accent: #8d5d2f;
+  --accent-soft: rgba(141, 93, 47, 0.14);
+  --shadow: 0 22px 64px rgba(42, 32, 22, 0.08);
+  --content-width: min(100% - 2rem, 720px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(141, 93, 47, 0.12), transparent 34%),
+    var(--page-bg);
+  color: var(--text);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(18, 18, 18, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 18, 18, 0.02) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at center, black 20%, transparent 78%);
+}
+
+.page-shell {
+  padding: 4rem 0 6rem;
+}
+
+.stream-layout {
+  width: var(--content-width);
+  margin: 0 auto;
+}
+
+.hero {
+  margin-bottom: 2.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  color: var(--accent);
+  font-family: Baskerville, "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: clamp(3rem, 9vw, 4.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.hero-copy {
+  max-width: 36rem;
+  margin: 1.35rem 0 0;
+  color: rgba(36, 31, 26, 0.9);
+  font-family: Baskerville, "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: clamp(1.1rem, 2.3vw, 1.45rem);
+  line-height: 1.55;
+}
+
+.controls {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-bottom: 2.25rem;
+  padding: 0.35rem 0 0.7rem;
+  backdrop-filter: blur(8px);
+}
+
+.search-field {
+  display: block;
+  width: min(100%, 32rem);
+}
+
+.search-field input {
+  width: 100%;
+  padding: 0.82rem 0.95rem;
+  border: 1px solid rgba(60, 45, 31, 0.16);
+  background: var(--paper);
+  box-shadow: 0 10px 26px rgba(42, 32, 22, 0.04);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.96rem;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.search-field input::placeholder {
+  color: #8e8275;
+  font-style: italic;
+}
+
+.search-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(141, 93, 47, 0.1);
+}
+
+.stream-meta,
+.status-message {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.status-message {
+  min-height: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.stream {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.entry-card {
+  position: relative;
+}
+
+.entry-card::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border: 1.2px solid rgba(60, 45, 31, 0.18);
+  pointer-events: none;
+}
+
+.entry-card__frame {
+  position: relative;
+  padding: 1.7rem 1.9rem 1.8rem;
+  border: 2px solid var(--line-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(248, 241, 231, 0.96));
+  box-shadow: var(--shadow);
+}
+
+.entry-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+  font-family: Baskerville, "Iowan Old Style", "Palatino Linotype", serif;
+}
+
+.entry-card__date {
+  color: var(--accent);
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  font-weight: 700;
+}
+
+.entry-card__time {
+  color: rgba(36, 31, 26, 0.8);
+  font-size: 1.05rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.entry-card__body {
+  font-family: Baskerville, "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: clamp(1.2rem, 2vw, 1.45rem);
+  line-height: 1.7;
+}
+
+.entry-card__body p {
+  margin: 0;
+}
+
+.entry-card__body p + p {
+  margin-top: 1rem;
+}
+
+.entry-card__body a {
+  color: inherit;
+  text-decoration: none;
+  pointer-events: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    padding: 2.4rem 0 4rem;
+  }
+
+  .controls {
+    padding-top: 0.25rem;
+  }
+
+  .entry-card__frame {
+    padding: 1.35rem 1.2rem 1.4rem;
+  }
+
+  .entry-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+}
