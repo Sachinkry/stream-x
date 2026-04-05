@@ -110,3 +110,97 @@ Publishing should leave a visible trail.
 - Only the chat ID in `TELEGRAM_ALLOWED_CHAT_ID` is allowed to publish.
 - Telegram messages are timestamped into the archive using `Asia/Kolkata`.
 - If you create a new month file automatically through Telegram, the script also adds it to `content/manifest.json`.
+
+## Realtime Telegram mode on Cloudflare
+
+If you want `/stream` to appear within seconds on `https://stream-x.pages.dev/`, use the Cloudflare webhook path in this repo.
+
+### What this adds
+
+- `functions/api/telegram-webhook.js` receives Telegram webhook events in realtime
+- `functions/api/stream.js` serves live posts from D1
+- `schema.sql` defines the D1 table
+- `script.js` now prefers the live API and falls back to the markdown archive if the API is unavailable
+
+### Cloudflare setup
+
+1. In Cloudflare, open `Workers & Pages` -> `D1 SQL database` -> `stream-x`.
+2. Confirm the database id is:
+   - `0da50caf-20b9-458c-9663-38e54b836552`
+3. In your Pages project, bind that database with this exact binding name:
+   - `STREAM_DB`
+4. In your Pages project secrets, set:
+   - `TELEGRAM_BOT_TOKEN`
+   - `TELEGRAM_ALLOWED_CHAT_ID`
+   - `TELEGRAM_WEBHOOK_SECRET`
+   - optional: `STREAM_TIMEZONE` with value `Asia/Kolkata`
+5. Apply `schema.sql` to the D1 database.
+
+### Bind the D1 database to the Pages project
+
+1. Open `Cloudflare Dashboard`
+2. Open `Workers & Pages`
+3. Open your Pages project `stream-x`
+4. Open `Settings`
+5. Open `Bindings`
+6. Click `Add binding`
+7. Choose `D1 database`
+8. Set:
+   - Variable name: `STREAM_DB`
+   - D1 database: `stream-x`
+9. Save and redeploy
+
+### Apply the schema
+
+Using Wrangler:
+
+```bash
+npx wrangler d1 execute stream-x --remote --file schema.sql
+```
+
+Using the Cloudflare dashboard:
+
+1. Open `Workers & Pages` -> `D1 SQL database` -> `stream-x`
+2. Open `Console`
+3. Paste the contents of `schema.sql`
+4. Run the query
+
+### Exact webhook command
+
+Replace the placeholders and run:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" \
+  -d "url=https://stream-x.pages.dev/api/telegram-webhook" \
+  -d "secret_token=<YOUR_TELEGRAM_WEBHOOK_SECRET>"
+```
+
+### Verify the webhook
+
+```bash
+curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
+```
+
+### Test publishing
+
+Send this to your bot in Telegram:
+
+```text
+/stream This should appear on the site in a few seconds.
+```
+
+Then verify:
+
+```bash
+curl https://stream-x.pages.dev/api/stream
+```
+
+### Important limitation
+
+Telegram webhook mode and Telegram `getUpdates` polling mode cannot be active at the same time for the same bot.
+
+That means:
+
+- the Cloudflare realtime mode is the primary mode
+- the GitHub 5-minute polling workflow remains in the repo as a fallback/manual mode
+- if you enable the webhook, do not expect the polling workflow to ingest the same bot simultaneously

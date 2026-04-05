@@ -1,8 +1,11 @@
 const manifestPath = "content/manifest.json";
+const liveApiPath = "/api/stream?limit=100";
+const liveRefreshIntervalMs = 8000;
 
 const state = {
   allEntries: [],
   filteredEntries: [],
+  usingLiveApi: false,
 };
 
 const streamElement = document.querySelector("#stream");
@@ -18,9 +21,7 @@ initialize().catch((error) => {
 });
 
 async function initialize() {
-  const files = await loadManifest();
-  const documents = await Promise.all(files.map(loadMarkdownFile));
-  const entries = documents.flatMap(({ source, markdown }) => parseEntries(markdown, source));
+  const entries = await loadEntries();
 
   entries.sort((left, right) => right.timestamp - left.timestamp);
 
@@ -32,6 +33,83 @@ async function initialize() {
   renderEntries();
   updateMeta();
   setStatus("");
+
+  if (state.usingLiveApi) {
+    window.setInterval(refreshLiveEntries, liveRefreshIntervalMs);
+  }
+}
+
+async function loadEntries() {
+  try {
+    const liveEntries = await loadLiveEntries();
+    state.usingLiveApi = true;
+    return liveEntries;
+  } catch (error) {
+    console.warn("Live API unavailable, falling back to markdown archive.", error);
+    state.usingLiveApi = false;
+    setStatus("Live stream unavailable. Showing archive.");
+    return loadMarkdownEntries();
+  }
+}
+
+async function loadLiveEntries() {
+  const response = await fetch(liveApiPath, {
+    headers: {
+      accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Live API request failed with ${response.status}`);
+  }
+
+  const payload = await response.json();
+
+  if (!payload.ok || !Array.isArray(payload.entries)) {
+    throw new Error("Live API payload is invalid.");
+  }
+
+  return payload.entries.map((entry) => ({
+    id: `live-${entry.id}`,
+    body: entry.body,
+    source: entry.source || "telegram",
+    timestamp: new Date(entry.createdAt),
+  }));
+}
+
+async function loadMarkdownEntries() {
+  const files = await loadManifest();
+  const documents = await Promise.all(files.map(loadMarkdownFile));
+  return documents.flatMap(({ source, markdown }) => parseEntries(markdown, source));
+}
+
+async function refreshLiveEntries() {
+  if (!state.usingLiveApi) {
+    return;
+  }
+
+  try {
+    const entries = await loadLiveEntries();
+    entries.sort((left, right) => right.timestamp - left.timestamp);
+    state.allEntries = entries;
+
+    const query = searchInput.value.trim().toLowerCase();
+    state.filteredEntries = query
+      ? entries.filter((entry) => {
+          const dateLabel = formatDate(entry.timestamp).toLowerCase();
+          const timeLabel = formatTime(entry.timestamp).toLowerCase();
+          const haystack = `${entry.body} ${dateLabel} ${timeLabel}`.toLowerCase();
+          return haystack.includes(query);
+        })
+      : entries;
+
+    renderEntries();
+    updateMeta();
+    setStatus("");
+  } catch (error) {
+    console.warn("Live refresh failed.", error);
+    setStatus("Live refresh paused. Reload to retry.");
+  }
 }
 
 async function loadManifest() {
@@ -189,7 +267,9 @@ function updateMeta() {
   }
 
   if (visible === total) {
-    streamMetaElement.textContent = `${total} ${total === 1 ? "entry" : "entries"} in the archive.`;
+    streamMetaElement.textContent = state.usingLiveApi
+      ? `${total} ${total === 1 ? "entry" : "entries"} in the live stream.`
+      : `${total} ${total === 1 ? "entry" : "entries"} in the archive.`;
     return;
   }
 

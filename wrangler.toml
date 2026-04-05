@@ -1,0 +1,8 @@
+name = "stream-x"
+compatibility_date = "2026-04-05"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "STREAM_DB"
+database_name = "stream-x"
+database_id = "0da50caf-20b9-458c-9663-38e54b836552"
