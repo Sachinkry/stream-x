@@ -1,5 +1,5 @@
 const manifestPath = "content/manifest.json";
-const liveApiPath = "/api/stream?limit=100";
+const liveApiPath = "/api/stream?limit=10000";
 const liveRefreshIntervalMs = 8000;
 
 const state = {
