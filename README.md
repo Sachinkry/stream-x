@@ -204,3 +204,54 @@ That means:
 - the Cloudflare realtime mode is the primary mode
 - the GitHub 5-minute polling workflow remains in the repo as a fallback/manual mode
 - if you enable the webhook, do not expect the polling workflow to ingest the same bot simultaneously
+
+## Tweeting to X from Telegram (`/t`)
+
+The bot can post to x.com via the X API v2 Free tier (500 posts/month, 17/day) using OAuth 1.0a user context — long-lived tokens, no refresh dance.
+
+### One-time setup
+
+1. Create an app at developers.x.com.
+   - In "User authentication settings": enable OAuth 1.0a, set app permissions to **Read and write**.
+   - Open "Keys and tokens" and generate:
+     - **Consumer Keys** → API Key + API Key Secret
+     - **Access Token and Secret** → Access Token + Access Token Secret (make sure these have Read+Write)
+
+2. Apply the schema additions to D1 (idempotent):
+
+   ```bash
+   wrangler d1 execute stream-x --remote --file=./schema.sql
+   ```
+
+3. Store secrets on Cloudflare Pages:
+
+   ```bash
+   wrangler pages secret put X_CONSUMER_KEY           # API Key
+   wrangler pages secret put X_CONSUMER_SECRET        # API Key Secret
+   wrangler pages secret put X_ACCESS_TOKEN           # Access Token
+   wrangler pages secret put X_ACCESS_TOKEN_SECRET    # Access Token Secret
+   wrangler pages secret put X_HANDLE                 # e.g. heysachinkry, used for the success URL
+   ```
+
+### Usage
+
+In your Telegram chat:
+
+- `/t shipping tonight` — posts immediately, bot replies with the x.com link.
+- `/t` as a reply to a previous message — tweets that message's text (a leading `/stream` is stripped).
+- `/t <text>` as a reply — inline text wins, the reply target is ignored.
+
+### Safety / security notes
+
+- The webhook secret header and chat-id allowlist still gate every request.
+- All four X credentials live only in Cloudflare encrypted secrets; revoke from the X dashboard if leaked.
+- Each Telegram `update_id` is recorded in a `tweets` row with a `UNIQUE` constraint, so a duplicate webhook delivery cannot post twice.
+- Credentials are never logged; error messages from X are sanitized before being relayed to Telegram.
+- The 280-character limit is enforced before the API call (URLs counted as 23).
+
+### Tests
+
+```bash
+npm install
+npm test
+```

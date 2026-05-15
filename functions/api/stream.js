@@ -1,5 +1,5 @@
-const DEFAULT_LIMIT = 100;
-const MAX_LIMIT = 250;
+const DEFAULT_LIMIT = 10000;
+const MAX_LIMIT = 10000;
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -27,9 +27,10 @@ export async function onRequestGet(context) {
         SELECT
           id,
           body,
-          source,
+          x_tweet_id,
           created_at_iso AS createdAt
         FROM posts
+        WHERE is_stream = 1
         ORDER BY created_at_epoch_ms DESC
         LIMIT ?
       `,
@@ -42,7 +43,7 @@ export async function onRequestGet(context) {
     entries: (result.results || []).map((row) => ({
       id: String(row.id),
       body: row.body,
-      source: row.source,
+      tweetId: row.x_tweet_id || null,
       createdAt: row.createdAt,
     })),
   });

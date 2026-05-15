@@ -12,3 +12,10 @@ coverage/
 dist/
 .wrangler/
 repomix-output.xml
+.claude/
+.stream-state/
+.claude/
+.cursor/
+.aider*
+.vscode/
+.idea/
